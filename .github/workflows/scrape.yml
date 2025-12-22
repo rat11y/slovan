@@ -2,18 +2,22 @@ name: Aktualizace fotbalových dat
 
 on:
   schedule:
-    - cron: '0 */6 * * *' # Spustí se každých 6 hodin
-  workflow_dispatch: # Umožní spustit ručně tlačítkem
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    # TENTO ŘÁDEK JE KLÍČOVÝ - dává práva přímo tomuto úkolu
+    permissions:
+      contents: write
+      
     steps:
       - name: Checkout repozitáře
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4 # Aktualizováno na v4
 
       - name: Nastavení Pythonu
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5 # Aktualizováno na v5
         with:
           python-version: '3.10'
 
@@ -25,8 +29,9 @@ jobs:
 
       - name: Uložení změn (data.json)
         run: |
-          git config --global user.name 'GitHub Action'
-          git config --global user.email 'action@github.com'
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git add data.json
-          git commit -m "Automatická aktualizace výsledků" || exit 0
+          # Příkaz commitne jen pokud jsou změny, jinak nehodí chybu
+          git commit -m "Automatická aktualizace výsledků" || echo "Žádné změny ke zveřejnění"
           git push
