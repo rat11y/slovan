@@ -1,36 +1,39 @@
 import requests
 from bs4 import BeautifulSoup
 import json
+import os
 
 def scrape():
-    url = "https://www.fotbal.cz/souteze/club/club/697be23f-6185-48b9-ba91-66c82b3d81e9"
-    headers = {"User-Agent": "Mozilla/5.0"}
+    # Cesta k souboru
+    file_path = 'data.json'
     
-    print("Stahuji data...")
+    # Základní data, kdyby vše selhalo
+    output_data = {"status": "error", "message": "Nepodařilo se stáhnout data"}
     
     try:
-        res = requests.get(url, headers=headers)
-        soup = BeautifulSoup(res.content, "html.parser")
+        url = "https://www.fotbal.cz/souteze/club/club/697be23f-6185-48b9-ba91-66c82b3d81e9"
+        res = requests.get(url, headers={"User-Agent": "Mozilla/5.0"}, timeout=10)
         
-        # Vytvoříme základní strukturu
-        data = {"klub": "SK Slovan Kunratice", "tabulky": []}
-        
-        # Najdeme všechny tabulky na stránce
-        for table in soup.find_all("table"):
-            rows = []
-            for tr in table.find_all("tr"):
-                cells = [td.text.strip() for td in tr.find_all(["td", "th"])]
-                rows.append(cells)
-            data["tabulky"].append(rows)
+        if res.status_code == 200:
+            soup = BeautifulSoup(res.content, "html.parser")
+            output_data = {"status": "ok", "tables": []}
             
+            for table in soup.find_all("table"):
+                rows = []
+                for tr in table.find_all("tr"):
+                    cells = [td.text.strip() for td in tr.find_all(["td", "th"])]
+                    rows.append(cells)
+                output_data["tables"].append(rows)
+                
     except Exception as e:
-        print(f"Chyba při stahování: {e}")
-        data = {"error": str(e)}
+        print(f"Chyba: {e}")
+        output_data["message"] = str(e)
 
-    # DŮLEŽITÉ: Tento řádek MUSÍ proběhnout vždy
-    with open("data.json", "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=4)
-    print("Soubor data.json uložen!")
+    # ZÁPIS SOUBORU - Tohle je nejdůležitější část
+    with open(file_path, "w", encoding="utf-8") as f:
+        json.dump(output_data, f, ensure_ascii=False, indent=4)
+    
+    print(f"Soubor {file_path} byl zapsán. Velikost: {os.path.getsize(file_path)} bajtů")
 
 if __name__ == "__main__":
     scrape()
