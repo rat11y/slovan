@@ -8,16 +8,14 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    # TENTO ŘÁDEK JE KLÍČOVÝ - dává práva přímo tomuto úkolu
     permissions:
       contents: write
-      
     steps:
       - name: Checkout repozitáře
-        uses: actions/checkout@v4 # Aktualizováno na v4
+        uses: actions/checkout@v4
 
       - name: Nastavení Pythonu
-        uses: actions/setup-python@v5 # Aktualizováno na v5
+        uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
@@ -27,12 +25,10 @@ jobs:
       - name: Spuštění scraperu
         run: python scraper.py
 
-      - name: Uložení změn (data.json)
+      - name: Uložení změn
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          # Tento příkaz zajistí, že soubor existuje, než ho zkusíme přidat
-          touch data.json 
           git add data.json
-          git commit -m "Automatická aktualizace výsledků" || echo "No changes"
-          git push
+          # Příkaz commitne jen pokud se data.json změnila oproti minulé verzi
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Automatická aktualizace výsledků" && git push)
