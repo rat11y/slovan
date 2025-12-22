@@ -1,0 +1,32 @@
+name: Aktualizace fotbalových dat
+
+on:
+  schedule:
+    - cron: '0 */6 * * *' # Spustí se každých 6 hodin
+  workflow_dispatch: # Umožní spustit ručně tlačítkem
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repozitáře
+        uses: actions/checkout@v3
+
+      - name: Nastavení Pythonu
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Instalace knihoven
+        run: pip install requests beautifulsoup4
+
+      - name: Spuštění scraperu
+        run: python scraper.py
+
+      - name: Uložení změn (data.json)
+        run: |
+          git config --global user.name 'GitHub Action'
+          git config --global user.email 'action@github.com'
+          git add data.json
+          git commit -m "Automatická aktualizace výsledků" || exit 0
+          git push
