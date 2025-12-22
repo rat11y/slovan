@@ -1,35 +1,35 @@
 name: Aktualizace fotbalových dat
 
 on:
-  workflow_dispatch: # Abychom to mohli spouštět ručně
+  schedule:
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      
     steps:
-      - name: Checkout
+      - name: Checkout repozitáře
         uses: actions/checkout@v4
 
-      - name: Setup Python
+      - name: Nastavení Pythonu
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
-      - name: Install dependencies
+      - name: Instalace knihoven
         run: pip install requests beautifulsoup4
 
-      - name: Run Scraper
+      - name: Spuštění scraperu
         run: python scraper.py
 
-      - name: Check if file exists
-        run: ls -l data.json # Tohle nám ukáže, jestli tam soubor je
-
-      - name: Commit and Push
+      - name: Uložení změn
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git add data.json
-          git commit -m "Aktualizace" || echo "No changes"
+          git commit -m "Automatická aktualizace výsledků" || echo "Žádné změny"
           git push
