@@ -27,11 +27,12 @@ jobs:
       - name: Spuštění scraperu
         run: python scraper.py
 
-      - name: Uložení změn (data.json)
+      -- name: Uložení změn (data.json)
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          # Tento příkaz zajistí, že soubor existuje, než ho zkusíme přidat
+          touch data.json 
           git add data.json
-          # Příkaz commitne jen pokud jsou změny, jinak nehodí chybu
-          git commit -m "Automatická aktualizace výsledků" || echo "Žádné změny ke zveřejnění"
+          git commit -m "Automatická aktualizace výsledků" || echo "No changes"
           git push
